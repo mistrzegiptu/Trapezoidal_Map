@@ -42,6 +42,9 @@ class Segment:
     def is_above(self, q: Point) -> bool:
         return Point.cross_product(self.left, self.right, q) < -Segment.eps
 
+    def to_tuple(self):
+        return (self.left.x, self.left.y), (self.right.x, self.right.y)
+
 class Trapezoid:
     def __init__(self, left: Point, right: Point, up: Segment, down: Segment):
         self.left = left
