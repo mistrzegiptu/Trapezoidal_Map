@@ -1,7 +1,6 @@
 from visualizer.main import Visualizer
 
-vis = Visualizer()
-vis.add_point((1, 1))
-vis.show()
-
-
+if __name__ == "__main__":
+    vis = Visualizer()
+    vis.add_point((1, 1))
+    vis.show()
