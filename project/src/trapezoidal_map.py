@@ -5,13 +5,12 @@ class TrapezoidalMap:
 
     def __init__(self, S: list[tuple[tuple[float, float], tuple[float, float]]]):
         permuted_s = random.sample(S, len(S))
-        self.segments = self._create_segments(permuted_s)
-        self.rect_bound = self._create_rect_bound()
+        self.segments = self.__create_segments(permuted_s)
+        self.rect_bound = self.__create_rect_bound()
         self.tree = DTree()
         self.tree.root = self.rect_bound
 
-
-
+#   TODO: Dlaczego nic nie zwraca?
     def build_trapezoidal_map(self):
         for i in range(len(self.segments)):
             intersected_trapezoids = self.follow_segment(self.segments[i])
@@ -21,12 +20,12 @@ class TrapezoidalMap:
     def follow_segment(self, s: Segment):
         p, q = s.to_tuple()
         intersected_trapezoids = []
-        first_trapezoid = self.tree.find(self.tree.root, p, s.get_a())
+        first_trapezoid = self.tree.find(self.tree.root, p, s.a)
         intersected_trapezoids.append(first_trapezoid)
 
         j = 0
         while intersected_trapezoids[j].right < q:
-            if s.is_above(intersected_trapezoids[j].right):
+            if s.position(intersected_trapezoids[j].right) == Position.ABOVE:
                 intersected_trapezoids.append(intersected_trapezoids[j].bottom_right)
             else:
                 intersected_trapezoids.append(intersected_trapezoids[j].top_right)
@@ -34,7 +33,8 @@ class TrapezoidalMap:
 
         return intersected_trapezoids
 
-    def _create_segments(self, permuted_s) -> list[Segment]:
+    @staticmethod
+    def __create_segments(permuted_s) -> list[Segment]:
         result = []
         for line in permuted_s:
             start = Point(line[0][0], line[0][1])
@@ -43,7 +43,7 @@ class TrapezoidalMap:
 
         return result
 
-    def _create_rect_bound(self) -> Trapezoid:
+    def __create_rect_bound(self) -> Trapezoid:
         # assuming that segments is list of Segments objects
         min_x = min(self.segments, key=lambda x: x.left.x).left.x
         max_x = max(self.segments, key=lambda x: x.right.x).right.x

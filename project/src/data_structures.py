@@ -1,5 +1,6 @@
 from __future__ import annotations
 from typing import Tuple
+from utils import Position
 
 class Point:
     def __init__(self, x: float, y: float):
@@ -42,13 +43,13 @@ class Segment:
     def __repr__(self) -> str:
         return f"[{self.left}, {self.right}]"
 
-    def position(self, q: Point) -> int:
+    def position(self, q: Point) -> Position:
         cross_product = Point.cross_product(self.left, self.right, q)
-        if cross_product < -Segment.eps:
-            return 1
-        elif cross_product > Segment.eps:
-            return -1
-        return 0
+        if cross_product > Segment.eps:
+            return Position.ABOVE
+        elif cross_product < -Segment.eps:
+            return Position.BELOW
+        return Position.ON
 
     def to_tuple(self):
         return (self.left.x, self.left.y), (self.right.x, self.right.y)
@@ -108,7 +109,6 @@ class DTree:
     def __init__(self):
         self.root = None
 
-#   TODO: Dlaczego a nie jest nigdy aktualizowane?
     def find(self, node: (Node, YNode, XNode), point: Point, a: float = None):
         if Node.is_leaf(node):
             return node.trapezoid
@@ -119,12 +119,13 @@ class DTree:
                 return self.find(node.right, point, a)
         else:
             position = node.s.position(point)
-            if position == 1:
+            if position == Position.ABOVE:
                 return self.find(node.right, point, a)
-            elif position == 0:
+            elif position == Position.BELOW:
+                return self.find(node.right, point, a)
+            else:
                 if node.s.a < a:
                     return self.find(node.left, point, a)
                 else:
                     return self.find(node.right, point, a)
-            else:
-                self.find(node.right, point, a)
+
