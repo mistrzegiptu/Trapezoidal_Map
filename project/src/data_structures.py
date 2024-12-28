@@ -1,6 +1,6 @@
 from __future__ import annotations
 from typing import Tuple
-from utils import Position
+from .utils import Position
 
 class Point:
     def __init__(self, x: float, y: float):
@@ -54,6 +54,9 @@ class Segment:
     def to_tuple(self):
         return (self.left.x, self.left.y), (self.right.x, self.right.y)
 
+    def get_y_from_x(self, x):
+        return self.a * x + self.b
+
 class Trapezoid:
     def __init__(self, left: Point, right: Point, up: Segment, down: Segment):
         self.left = left
@@ -70,6 +73,22 @@ class Trapezoid:
 
     def __repr__(self) -> str:
         return f"[{self.left}, {self.right}, {self.up}, {self.down}]"
+
+    def get_points(self, as_tuples = False) -> tuple:
+        p1 = Point(self.left.x, self.down.get_y_from_x(self.left.x))
+        p2 = Point(self.right.x, self.down.get_y_from_x(self.right.x))
+        p3 = Point(self.right.x, self.up.get_y_from_x(self.right.x))
+        p4 = Point(self.left.x, self.up.get_y_from_x(self.left.x))
+        if not as_tuples:
+            return p1, p2, p3, p4
+        return p1.to_tuple(), p2.to_tuple(), p3.to_tuple(), p4.to_tuple()
+
+    def get_segments(self, as_tuples = False) -> tuple:
+        p = self.get_points(as_tuples)
+        if not as_tuples:
+            return Segment(p[0], p[1]), Segment(p[1], p[2]), Segment(p[2], p[3]), Segment(p[3], p[0])
+        return (p[0], p[1]), (p[1], p[2]), (p[2], p[3]), (p[3], p[0])
+
 
 class Leaf:
     def __init__(self, trapezoid):

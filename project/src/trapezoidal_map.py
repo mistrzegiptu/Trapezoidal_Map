@@ -1,4 +1,5 @@
-from data_structures import *
+from .data_structures import *
+from ..visualizer.main import Visualizer
 import random
 
 class TrapezoidalMap:
@@ -8,9 +9,8 @@ class TrapezoidalMap:
         self.segments = self.__create_segments(permuted_s)
         self.rect_bound = self.__create_rect_bound()
         self.tree = DTree()
-        self.tree.root = self.rect_bound
+        self.tree.root = Leaf(self.rect_bound)
 
-#   TODO: Dlaczego nic nie zwraca?
     def build_trapezoidal_map(self):
         for i in range(len(self.segments)):
             intersected_trapezoids = self.follow_segment(self.segments[i])
@@ -60,3 +60,31 @@ class TrapezoidalMap:
         bottomSegment = Segment(Point(min_x, min_y), Point(max_x, min_y))
 
         return Trapezoid(Point(min_x, min_y), Point(max_x, max_y), topSegment, bottomSegment)
+
+    def get_visualizer(self) -> Visualizer:
+        visited = set()
+        queue = [self.tree.root.trapezoid]
+        vis = Visualizer()
+
+        while queue:
+            trapezoid = queue.pop(0)
+
+            if trapezoid in visited:
+                continue
+
+            visited.add(trapezoid)
+
+            line_segments = trapezoid.get_segments(as_tuples=True)
+            vis.add_line_segment(line_segments)
+
+            for neighbor in [trapezoid.top_left, trapezoid.bottom_left, trapezoid.bottom_right,
+                             trapezoid.top_right]:
+                if neighbor and neighbor not in visited:
+                    queue.append(neighbor)
+
+        return vis
+
+
+
+
+
