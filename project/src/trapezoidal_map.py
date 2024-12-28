@@ -14,8 +14,9 @@ class TrapezoidalMap:
     def build_trapezoidal_map(self):
         for i in range(len(self.segments)):
             intersected_trapezoids = self.follow_segment(self.segments[i])
+            self.update_map(intersected_trapezoids, self.segments[i])
 
-        return 0
+        return self.tree
 
     def follow_segment(self, s: Segment):
         p, q = s.to_tuple()
@@ -32,6 +33,65 @@ class TrapezoidalMap:
             j += 1
 
         return intersected_trapezoids
+
+    # TODO: multiple intersected trapezoids, updating Dtree, possibly refactor this method
+    def update_map(self, trapezoids: list[Trapezoid], s: Segment):
+        p, q = s.to_tuple()
+
+        if len(trapezoids) == 1:
+            trapezoid = trapezoids[0]
+            top_right = trapezoid.top_right
+            top_left = trapezoid.top_left
+            bottom_left = trapezoid.bottom_left
+            bottom_right = trapezoid.bottom_right
+            upper_segment = trapezoid.up
+            lower_segment = trapezoid.down
+
+            top = Trapezoid(p, q, upper_segment, s)
+            bottom = Trapezoid(p, q, s, lower_segment)
+            left = None
+            right = None
+
+            if p.x > trapezoid.left.x:
+                left = Trapezoid(trapezoid.left, p, upper_segment, lower_segment)
+                left.top_left = top_left
+                left.bottom_left = bottom_left
+                left.top_right = top
+                left.bottom_right = bottom
+
+                top.top_left = left
+                bottom.bottom_left = left
+
+            if q.x < trapezoid.right.x:
+                right = Trapezoid(q, trapezoid.right, upper_segment, lower_segment)
+                right.top_right = top_right
+                right.bottom_right = bottom_right
+                right.top_left = top
+                right.bottom_left = bottom
+
+                top.top_right = right
+                bottom.bottom_right = right
+
+            if not left:
+                left_s = trapezoid.top_left.down
+                if not left_s:
+                    left_s = trapezoid.bottom_left.up
+
+                if left_s.q.y > p.y:
+                    bottom.top_left = top_left
+                elif left_s.q.y < p.y:
+                    top.bottom_left = bottom_left
+
+            if not right:
+                right_s = trapezoid.top_right.down
+                if not right_s:
+                    right_s = trapezoid.bottom_right.up
+
+                if right_s.p.y > q.y:
+                    top.bottom_right = bottom_right
+                elif right_s.p.y < q.y:
+                    bottom.top_right = top_right
+
 
     @staticmethod
     def __create_segments(permuted_s) -> list[Segment]:
