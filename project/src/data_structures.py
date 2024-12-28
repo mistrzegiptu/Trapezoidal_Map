@@ -42,6 +42,14 @@ class Segment:
     def is_above(self, q: Point) -> bool:
         return Point.cross_product(self.left, self.right, q) < -Segment.eps
 
+    def get_a(self):
+        return (self.left.y - self.right.y) / (self.left.x - self.right.x)
+
+    def get_b(self):
+        return self.right.y - self.right.x * self.get_a()
+    def y_at_x(self, x):
+        return self.get_a() * x + self.get_b()
+
     def to_tuple(self):
         return (self.left.x, self.left.y), (self.right.x, self.right.y)
 
@@ -100,5 +108,22 @@ class DTree:
     def __init__(self):
         self.root = None
 
-
+    def find(self, node: Node, point: Point, a: float = None):
+        if Node.is_leaf(node):
+            return node.trapezoid
+        elif Node.is_x_node(node):
+            if node.p > point:
+                return self.find(node.left, point, a)
+            else:
+                return self.find(node.right, point, a)
+        else:
+            if node.s.is_above(point):
+                return self.find(node.right, point, a)
+            elif node.s.y_at_x(point.x) == point.y:
+                if node.s.get_a() < a:
+                    return self.find(node.left, point, a)
+                else:
+                    return self.find(node.right, point, a)
+            else:
+                self.find(node.right, point, a)
 
