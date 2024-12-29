@@ -34,7 +34,8 @@ class TrapezoidalMap:
         return intersected_trapezoids
 
     @staticmethod
-    def divide_single_trapezoid(trapezoid: Trapezoid, s: Segment, p: Point, q: Point):
+    def divide_single_trapezoid(trapezoid: Trapezoid, s: Segment):
+        p, q = s.to_tuple()
         top_right = trapezoid.top_right
         top_left = trapezoid.top_left
         bottom_left = trapezoid.bottom_left
@@ -52,7 +53,6 @@ class TrapezoidalMap:
             left.bottom_left = bottom_left
             left.top_right = top
             left.bottom_right = bottom
-        #   TODO: czy nie powinno być jeszcze np. "top_left.bottom_right = left"?
 
             top.top_left = left
             bottom.bottom_left = left
@@ -67,8 +67,6 @@ class TrapezoidalMap:
             top.top_right = right
             bottom.bottom_right = right
 
-        #   TODO: Czy faktycznie takie przypadki mogą zajść? Jeśli odcinek s wychodzi poza trapez to przecina też inny trapez
-        #         więc to będzie sytuacja, gdy len(trapezoids) > 1.  
         if not left:
             left_s = trapezoid.top_left.down
             if not left_s:
@@ -89,14 +87,9 @@ class TrapezoidalMap:
             elif right_s.p.y < q.y:
                 bottom.top_right = top_right
 
-
-
-    # TODO: multiple intersected trapezoids, updating Dtree, possibly refactor this method
     def update_map(self, trapezoids: list[Trapezoid], s: Segment):
-        p, q = s.to_tuple()
-
         if len(trapezoids) == 1:
-            TrapezoidalMap.divide_single_trapezoid(trapezoids[0], s, p, q)
+            TrapezoidalMap.divide_single_trapezoid(trapezoids[0], s)
 
 
     @staticmethod
