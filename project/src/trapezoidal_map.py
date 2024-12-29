@@ -35,7 +35,7 @@ class TrapezoidalMap:
 
     @staticmethod
     def divide_single_trapezoid(trapezoid: Trapezoid, s: Segment):
-        p, q = s.to_tuple()
+        p, q = s.get_points()
         top_right = trapezoid.top_right
         top_left = trapezoid.top_left
         bottom_left = trapezoid.bottom_left
@@ -58,7 +58,6 @@ class TrapezoidalMap:
                 top_left.top_right = left
             if bottom_left:
                 bottom_left.bottom_right = left
-
 
             top.top_left = left
             bottom.bottom_left = left
@@ -97,6 +96,37 @@ class TrapezoidalMap:
                 top.bottom_right = bottom_right
             elif right_s.p.y < q.y:
                 bottom.top_right = top_right
+
+    @staticmethod
+    def divide_leftmost_trapezoid(trapezoid: Trapezoid, s:Segment):
+        p, _ = s.get_points()
+        top_right = trapezoid.top_right
+        top_left = trapezoid.top_left
+        bottom_left = trapezoid.bottom_left
+        bottom_right = trapezoid.bottom_right
+        upper_segment = trapezoid.up
+        lower_segment = trapezoid.down
+        right_point = trapezoid.right
+        left_point = trapezoid.left
+
+        top = Trapezoid(p, right_point, upper_segment, s)
+        bottom = Trapezoid(p, right_point, s, lower_segment)
+        left = None
+
+        if p.x > left_point:
+            left = Trapezoid(trapezoid.left, p, upper_segment, lower_segment)
+            left.top_left = top_left
+            left.bottom_left = bottom_left
+            left.top_right = top
+            left.bottom_right = bottom
+
+            if top_left:
+                top_left.top_right = left
+            if bottom_left:
+                bottom_left.bottom_right = left
+
+            top.top_left = left
+            bottom.bottom_left = left
 
     def update_map(self, trapezoids: list[Trapezoid], s: Segment):
         if len(trapezoids) == 1:

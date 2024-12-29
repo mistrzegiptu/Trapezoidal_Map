@@ -54,6 +54,9 @@ class Segment:
     def to_tuple(self):
         return (self.left.x, self.left.y), (self.right.x, self.right.y)
 
+    def get_points(self):
+        return self.left, self.right
+
     def get_y_from_x(self, x):
         return self.a * x + self.b
 
