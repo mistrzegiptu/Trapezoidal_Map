@@ -52,7 +52,11 @@ class TrapezoidalMap:
             left.bottom_left = bottom_left
             left.top_right = top
             left.bottom_right = bottom
-        #   TODO: czy nie powinno być jeszcze np. "top_left.bottom_right = left"?
+
+            if top_left:
+                top_left.top_right = left
+            if bottom_left:
+                bottom_left.bottom_right = left
 
             top.top_left = left
             bottom.bottom_left = left
@@ -64,11 +68,14 @@ class TrapezoidalMap:
             right.top_left = top
             right.bottom_left = bottom
 
+            if top_right:
+                top_right.top_left = right
+            if bottom_right:
+                bottom_right.bottom_left = right
+
             top.top_right = right
             bottom.bottom_right = right
 
-        #   TODO: Czy faktycznie takie przypadki mogą zajść? Jeśli odcinek s wychodzi poza trapez to przecina też inny trapez
-        #         więc to będzie sytuacja, gdy len(trapezoids) > 1.  
         if not left:
             left_s = trapezoid.top_left.down
             if not left_s:
