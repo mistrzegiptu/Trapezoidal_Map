@@ -34,7 +34,8 @@ class TrapezoidalMap:
         return intersected_trapezoids
 
     @staticmethod
-    def divide_single_trapezoid(trapezoid: Trapezoid, s: Segment, p: Point, q: Point):
+    def divide_single_trapezoid(trapezoid: Trapezoid, s: Segment):
+        p, q = s.to_tuple()
         top_right = trapezoid.top_right
         top_left = trapezoid.top_left
         bottom_left = trapezoid.bottom_left
@@ -57,6 +58,7 @@ class TrapezoidalMap:
                 top_left.top_right = left
             if bottom_left:
                 bottom_left.bottom_right = left
+
 
             top.top_left = left
             bottom.bottom_left = left
@@ -96,14 +98,9 @@ class TrapezoidalMap:
             elif right_s.p.y < q.y:
                 bottom.top_right = top_right
 
-
-
-    # TODO: multiple intersected trapezoids, updating Dtree, possibly refactor this method
     def update_map(self, trapezoids: list[Trapezoid], s: Segment):
-        p, q = s.to_tuple()
-
         if len(trapezoids) == 1:
-            TrapezoidalMap.divide_single_trapezoid(trapezoids[0], s, p, q)
+            TrapezoidalMap.divide_single_trapezoid(trapezoids[0], s)
 
 
     @staticmethod
