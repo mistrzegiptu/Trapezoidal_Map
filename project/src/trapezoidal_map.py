@@ -111,7 +111,9 @@ class TrapezoidalMap:
 
         top = Trapezoid(p, right_point, upper_segment, s)
         bottom = Trapezoid(p, right_point, s, lower_segment)
-        left = None
+
+        top.top_right = top_right
+        bottom.bottom_right = bottom_right
 
         if p.x > left_point:
             left = Trapezoid(trapezoid.left, p, upper_segment, lower_segment)
@@ -128,10 +130,119 @@ class TrapezoidalMap:
             top.top_left = left
             bottom.bottom_left = left
 
+        return top, bottom
+
+    @staticmethod
+    def divide_middle_trapezoid(trapezoid: Trapezoid, s: Segment, top_prev: Trapezoid, bottom_prev: Trapezoid):
+        top_right = trapezoid.top_right
+        top_left = trapezoid.top_left
+        bottom_left = trapezoid.bottom_left
+        bottom_right = trapezoid.bottom_right
+        upper_segment = trapezoid.up
+        lower_segment = trapezoid.down
+        right_point = trapezoid.right
+        left_point = trapezoid.left
+
+        top = Trapezoid(left_point, right_point, upper_segment, s)
+        bottom = Trapezoid(left_point, right_point, s, lower_segment)
+
+        if top_prev.up is top.up and top_prev.down is top.down:
+            top = Trapezoid(top_prev.left, top.right, top.up, top.down)
+            top.top_left = top_prev.top_left
+            top.bottom_left = top_prev.bottom_left
+        elif s.position(left_point) == Position.ABOVE:
+            top.bottom_left = top_prev
+
+        top.top_left = top_left
+        top.top_right = top_right
+
+        if bottom_prev.up is bottom.up and bottom_prev.down is bottom.down:
+            bottom = Trapezoid(bottom_prev.left, bottom.right, bottom.up, bottom.down)
+            bottom.top_left = bottom_prev.top_left
+            top.bottom_left = bottom_prev.bottom_left
+        elif s.position(left_point) == Position.BELOW:
+            bottom.top_left = bottom_prev
+
+        bottom.bottom_left = bottom_left
+        bottom.bottom_right = bottom_right
+
+#       TODO: Dodać przepinanie wskaźników z już istniejących trapezów do tych tutaj
+        return top, bottom
+
+    @staticmethod
+    def divide_rightmost_trapezoid(trapezoid: Trapezoid, s: Segment, top_prev: Trapezoid, bottom_prev: Trapezoid):
+        _, q = s.get_points()
+        top_right = trapezoid.top_right
+        top_left = trapezoid.top_left
+        bottom_left = trapezoid.bottom_left
+        bottom_right = trapezoid.bottom_right
+        upper_segment = trapezoid.up
+        lower_segment = trapezoid.down
+        right_point = trapezoid.right
+        left_point = trapezoid.left
+
+        top = Trapezoid(q, right_point, upper_segment, s)
+        bottom = Trapezoid(q, right_point, s, lower_segment)
+
+        top.top_right = top_right
+        bottom.bottom_right = bottom_right
+
+        right = None
+
+        if q.x < trapezoid.right.x:
+            right = Trapezoid(q, trapezoid.right, upper_segment, lower_segment)
+            right.top_right = top_right
+            right.bottom_right = bottom_right
+            right.top_left = top
+            right.bottom_left = bottom
+
+            if top_right:
+                top_right.top_left = right
+            if bottom_right:
+                bottom_right.bottom_left = right
+
+            top.top_right = right
+            bottom.bottom_right = right
+
+        if not right:
+            right_s = trapezoid.top_right.down
+            if not right_s:
+                right_s = trapezoid.bottom_right.up
+
+            if right_s.p.y > q.y:
+                top.bottom_right = bottom_right
+            elif right_s.p.y < q.y:
+                bottom.top_right = top_right
+
+        if top_prev.up is top.up and top_prev.down is top.down:
+            top = Trapezoid(top_prev.left, top.right, top.up, top.down)
+            top.top_left = top_prev.top_left
+            top.bottom_left = top_prev.bottom_left
+        elif s.position(left_point) == Position.ABOVE:
+            top.bottom_left = top_prev
+
+        top.top_left = top_left
+        top.top_right = top_right
+
+        if bottom_prev.up is bottom.up and bottom_prev.down is bottom.down:
+            bottom = Trapezoid(bottom_prev.left, bottom.right, bottom.up, bottom.down)
+            bottom.top_left = bottom_prev.top_left
+            top.bottom_left = bottom_prev.bottom_left
+        elif s.position(left_point) == Position.BELOW:
+            bottom.top_left = bottom_prev
+
+        bottom.bottom_left = bottom_left
+        bottom.bottom_right = bottom_right
+#       TODO: Dodać przepinanie wskaźników z już istniejących trapezów do tych tutaj
+
     def update_map(self, trapezoids: list[Trapezoid], s: Segment):
         if len(trapezoids) == 1:
             TrapezoidalMap.divide_single_trapezoid(trapezoids[0], s)
-
+        else:
+            top_prev, bottom_prev = TrapezoidalMap.divide_leftmost_trapezoid(trapezoids[0], s)
+            for i in range(1, len(trapezoids) - 1):
+                top_prev, bottom_prev = TrapezoidalMap.divide_middle_trapezoid(trapezoids[i], s, top_prev, bottom_prev)
+            TrapezoidalMap.divide_rightmost_trapezoid(trapezoids[-1], s, top_prev, bottom_prev)
 
     @staticmethod
     def __create_segments(permuted_s) -> list[Segment]:
