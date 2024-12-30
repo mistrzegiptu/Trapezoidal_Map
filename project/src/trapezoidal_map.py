@@ -18,7 +18,7 @@ class TrapezoidalMap:
         return self.tree
 
     def follow_segment(self, s: Segment):
-        p, q = s.to_tuple()
+        p, q = s.get_points()
         intersected_trapezoids = []
         first_trapezoid = self.tree.find(self.tree.root, p, s.a)
         intersected_trapezoids.append(first_trapezoid)
@@ -30,7 +30,6 @@ class TrapezoidalMap:
             else:
                 intersected_trapezoids.append(intersected_trapezoids[j].top_right)
             j += 1
-
         return intersected_trapezoids
 
     @staticmethod
@@ -77,6 +76,8 @@ class TrapezoidalMap:
             top.top_right = right
             bottom.bottom_right = right
 
+#       TODO: Zdarza się, że np. trapezoid.top_left jest None - wyrzuca wtedy błąd
+        """
         if not left:
             left_s = trapezoid.top_left.down
             if not left_s:
@@ -96,6 +97,7 @@ class TrapezoidalMap:
                 top.bottom_right = bottom_right
             elif right_s.p.y < q.y:
                 bottom.top_right = top_right
+        """
 
     @staticmethod
     def divide_leftmost_trapezoid(trapezoid: Trapezoid, s:Segment):
@@ -129,7 +131,19 @@ class TrapezoidalMap:
 
             top.top_left = left
             bottom.bottom_left = left
+            
+#       TODO: Zdarza się, że np. trapezoid.top_left jest None - wyrzuca wtedy błąd
+        """
+        if not left:
+            left_s = trapezoid.top_left.down
+            if not left_s:
+                left_s = trapezoid.bottom_left.up
 
+            if left_s.q.y > p.y:
+                bottom.top_left = top_left
+            elif left_s.q.y < p.y:
+                top.bottom_left = bottom_left
+        """
         return top, bottom
 
     @staticmethod
@@ -204,6 +218,8 @@ class TrapezoidalMap:
             top.top_right = right
             bottom.bottom_right = right
 
+#       TODO: Zdarza się, że np. trapezoid.top_left jest None - wyrzuca wtedy błąd
+        """
         if not right:
             right_s = trapezoid.top_right.down
             if not right_s:
@@ -213,7 +229,7 @@ class TrapezoidalMap:
                 top.bottom_right = bottom_right
             elif right_s.p.y < q.y:
                 bottom.top_right = top_right
-
+        """
         if top_prev.up is top.up and top_prev.down is top.down:
             top = Trapezoid(top_prev.left, top.right, top.up, top.down)
             top.top_left = top_prev.top_left
