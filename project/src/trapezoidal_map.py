@@ -99,6 +99,8 @@ class TrapezoidalMap:
                 bottom.top_right = top_right
         """
 
+        return top, bottom, left, right
+
     @staticmethod
     def divide_leftmost_trapezoid(trapezoid: Trapezoid, s:Segment):
         p, _ = s.get_points()
@@ -144,7 +146,7 @@ class TrapezoidalMap:
             elif left_s.q.y < p.y:
                 top.bottom_left = bottom_left
         """
-        return top, bottom
+        return top, bottom, left
 
     @staticmethod
     def divide_middle_trapezoid(trapezoid: Trapezoid, s: Segment, top_prev: Trapezoid, bottom_prev: Trapezoid):
@@ -251,15 +253,26 @@ class TrapezoidalMap:
         bottom.bottom_right = bottom_right
 #       TODO: Dodać przepinanie wskaźników z już istniejących trapezów do tych tutaj
 
+        return top, bottom, right
+
     def update_map(self, trapezoids: list[Trapezoid], s: Segment):
         if len(trapezoids) == 1:
-            TrapezoidalMap.divide_single_trapezoid(trapezoids[0], s)
+            top, bottom, left, right = TrapezoidalMap.divide_single_trapezoid(trapezoids[0], s)
+            self.tree.update_single(trapezoids[0], s, top, bottom, left, right)
         else:
-            top_prev, bottom_prev = TrapezoidalMap.divide_leftmost_trapezoid(trapezoids[0], s)
+            splitted_trapezoids = []
+
+            top_prev, bottom_prev, left_prev = TrapezoidalMap.divide_leftmost_trapezoid(trapezoids[0], s)
+            self.tree.update_single(trapezoids[0], s, top_prev, bottom_prev, left_prev, None)
+
             for i in range(1, len(trapezoids) - 1):
                 top_prev, bottom_prev = TrapezoidalMap.divide_middle_trapezoid(trapezoids[i], s, top_prev, bottom_prev)
-            TrapezoidalMap.divide_rightmost_trapezoid(trapezoids[-1], s, top_prev, bottom_prev)
+                splitted_trapezoids.append((top_prev, bottom_prev))
 
+            self.tree.update_multiple(trapezoids[1:-2:], s, splitted_trapezoids)
+
+            top_prev, bottom_prev, right_prev = TrapezoidalMap.divide_rightmost_trapezoid(trapezoids[-1], s, top_prev, bottom_prev)
+            self.tree.update_single(trapezoids[-1], s, top_prev, bottom_prev, None, right_prev)
     @staticmethod
     def __create_segments(permuted_s) -> list[Segment]:
         result = []
