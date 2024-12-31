@@ -151,3 +151,74 @@ class DTree:
                 else:
                     return self.find(node.right, point, a)
 
+    def find_parent(self, node: Node, target_node: Leaf):
+        if not node:
+            return None
+
+        if node.right == target_node or node.left == target_node:
+            return node
+
+        return self.find_parent(node.right, target_node) or self.find_parent(node.left, target_node)
+
+    def update_single(self, trapezoid: Trapezoid, segment: Segment, up: Trapezoid, down: Trapezoid, left: Trapezoid, right: Trapezoid):
+        node = self.find_parent(self.root, trapezoid.leaf)
+        p, q = segment.get_points()
+
+        segment_left_node = XNode(p)
+        segment_right_node = XNode(q)
+        segment_node = YNode(segment)
+
+        if left and right:
+            if node.left == trapezoid.leaf:
+                node.left = segment_left_node
+            else:
+                node.right = segment_left_node
+
+            segment_left_node.left = left
+            segment_left_node.right = segment_right_node
+
+            segment_right_node.left = segment_node
+            segment_right_node.right = right
+
+            segment_node.left = up
+            segment_node.right = down
+
+        elif left and not right:
+            if node.left == trapezoid.leaf:
+                node.left = segment_left_node
+            else:
+                node.right = segment_left_node
+
+            segment_left_node.left = left
+            segment_left_node.right = segment_node
+
+            segment_node.left = up
+            segment_node.right = down
+
+        elif not left and right:
+            if node.left == trapezoid.leaf:
+                node.left = segment_right_node
+            else:
+                node.right = segment_right_node
+
+            segment_left_node.left = segment_node
+            segment_left_node.right = right
+
+            segment_node.left = up
+            segment_node.right = down
+
+    def update_multiple(self, trapezoids: list[Trapezoid], segment: Segment, splitted_trapezoids: list[Tuple[Trapezoid, Trapezoid]]):
+        n = len(splitted_trapezoids)
+
+        for i in range(1, n):
+            trapezoid = trapezoids[i]
+            node = self.find_parent(self.root, trapezoid.leaf)
+            segment_node = YNode(segment)
+
+            if node.left == trapezoid.leaf:
+                node.left = segment_node
+            else:
+                node.right = segment_node
+
+            segment_node.left = splitted_trapezoids[0][i]
+            segment_node.right = splitted_trapezoids[0][i]
