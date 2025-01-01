@@ -92,6 +92,25 @@ class Trapezoid:
             return Segment(p[0], p[1]), Segment(p[1], p[2]), Segment(p[2], p[3]), Segment(p[3], p[0])
         return (p[0], p[1]), (p[1], p[2]), (p[2], p[3]), (p[3], p[0])
 
+    def connect_to_top_left(self, trapezoid: (Trapezoid, None)):
+        self.top_left = trapezoid
+        if trapezoid is not None:
+            trapezoid.top_right = self
+
+    def connect_to_top_right(self, trapezoid: (Trapezoid, None)):
+        self.top_right = trapezoid
+        if trapezoid is not None:
+            trapezoid.top_left = self
+
+    def connect_to_bottom_left(self, trapezoid: (Trapezoid, None)):
+        self.bottom_left = trapezoid
+        if trapezoid is not None:
+            trapezoid.bottom_right = self
+
+    def connect_to_bottom_right(self, trapezoid: (Trapezoid, None)):
+        self.bottom_right = trapezoid
+        if trapezoid is not None:
+            trapezoid.bottom_left = self
 
 class Leaf:
     def __init__(self, trapezoid):
