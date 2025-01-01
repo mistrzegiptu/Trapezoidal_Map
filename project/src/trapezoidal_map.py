@@ -1,5 +1,5 @@
 from .data_structures import *
-from ..visualizer.main import Visualizer
+from .visualizer.main import Visualizer
 import random
 
 class TrapezoidalMap:
