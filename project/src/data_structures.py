@@ -129,7 +129,10 @@ class Leaf:
         return f"{self.trapezoid}"
 
     def __eq__(self, other: Leaf) -> bool:
-        return self.trapezoid == other.trapezoid
+        if Node.are_same_type(self, other):
+            return self.trapezoid == other.trapezoid
+
+        return False
 
 class Node:
     def __init__(self):
@@ -148,15 +151,34 @@ class Node:
     def is_leaf(node: (Node, Leaf)) -> bool:
         return isinstance(node, Leaf)
 
+    @staticmethod
+    def are_same_type(first: Node, second: Node):
+        if (Node.is_leaf(first) and Node.is_leaf(second)) or (Node.is_y_node(first) and Node.is_y_node(second)) or (Node.is_x_node(first) and Node.is_x_node(second)):
+            return True
+
+        return False
+
 class XNode(Node):
     def __init__(self, p: Point):
         super().__init__()
         self.p = p
 
+    def __eq__(self, other):
+        if Node.are_same_type(self, other):
+            return self.p == other.p
+
+        return False
+
 class YNode(Node):
     def __init__(self, s: Segment):
         super().__init__()
         self.s = s
+
+    def __eq__(self, other):
+        if Node.are_same_type(self, other):
+            return self.s == other.s
+
+        return False
 
 class DTree:
     def __init__(self):
@@ -212,14 +234,14 @@ class DTree:
             else:
                 node.right = segment_left_node
 
-            segment_left_node.left = left
+            segment_left_node.left = Leaf(left)
             segment_left_node.right = segment_right_node
 
             segment_right_node.left = segment_node
-            segment_right_node.right = right
+            segment_right_node.right = Leaf(right)
 
-            segment_node.left = up
-            segment_node.right = down
+            segment_node.left = Leaf(up)
+            segment_node.right = Leaf(down)
 
         elif left and not right:
             if node.left == trapezoid.leaf:

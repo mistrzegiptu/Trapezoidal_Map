@@ -173,15 +173,18 @@ class TrapezoidalMap:
             splitted_trapezoids = []
 
             top_prev, bottom_prev, left_prev = TrapezoidalMap.divide_leftmost_trapezoid(trapezoids[0], s)
+            trapezoids[0].leaf = Leaf(trapezoids[0])
             self.tree.update_single(trapezoids[0], s, top_prev, bottom_prev, left_prev, None)
 
             for i in range(1, len(trapezoids) - 1):
                 top_prev, bottom_prev = TrapezoidalMap.divide_middle_trapezoid(trapezoids[i], s, top_prev, bottom_prev)
+                trapezoids[i].leaf = Leaf(trapezoids[i])
                 splitted_trapezoids.append((top_prev, bottom_prev))
 
             self.tree.update_multiple(trapezoids[1:-2:], s, splitted_trapezoids)
 
             top_prev, bottom_prev, right_prev = TrapezoidalMap.divide_rightmost_trapezoid(trapezoids[-1], s, top_prev, bottom_prev)
+            trapezoids[-1].leaf = Leaf(trapezoids[-1])
             self.tree.update_single(trapezoids[-1], s, top_prev, bottom_prev, None, right_prev)
 
     @staticmethod
