@@ -26,6 +26,9 @@ class Point:
     def cross_product(p: Point, q: Point, r: Point) -> float:
         return (q.x - p.x) * (r.y - q.y) - (q.y - p.y) * (r.x - q.x)
 
+    def __eq__(self, other: Point) -> bool:
+        return self.x == other.x and self.y == other.y
+
 class Segment:
     eps = 10 ** -16
 
@@ -59,6 +62,9 @@ class Segment:
 
     def get_y_from_x(self, x):
         return self.a * x + self.b
+
+    def __eq__(self, other: Segment) -> bool:
+        return self.left == other.left and self.right == other.right
 
 class Trapezoid:
     def __init__(self, left: Point, right: Point, up: Segment, down: Segment):
@@ -112,12 +118,18 @@ class Trapezoid:
         if trapezoid is not None:
             trapezoid.bottom_left = self
 
+    def __eq__(self, other: Trapezoid) -> bool:
+        return self.up == other.up and self.down == other.down and self.left == other.left and self.right == other.right
+
 class Leaf:
-    def __init__(self, trapezoid):
+    def __init__(self, trapezoid: Trapezoid):
         self.trapezoid = trapezoid
 
     def __repr__(self) -> str:
         return f"{self.trapezoid}"
+
+    def __eq__(self, other: Leaf) -> bool:
+        return self.trapezoid == other.trapezoid
 
 class Node:
     def __init__(self):
@@ -174,12 +186,17 @@ class DTree:
         if not node:
             return None
 
+        if Node.is_leaf(node):
+            if self.root == target_node:
+                return self.root
+            return None
+
         if node.right == target_node or node.left == target_node:
             return node
 
         return self.find_parent(node.right, target_node) or self.find_parent(node.left, target_node)
 
-    def update_single(self, trapezoid: Trapezoid, segment: Segment, up: Trapezoid, down: Trapezoid, left: Trapezoid, right: Trapezoid):
+    def update_single(self, trapezoid: Trapezoid, segment: Segment, up: Trapezoid, down: Trapezoid, left: (Trapezoid, None), right: (Trapezoid, None)):
         node = self.find_parent(self.root, trapezoid.leaf)
         p, q = segment.get_points()
 
@@ -188,7 +205,9 @@ class DTree:
         segment_node = YNode(segment)
 
         if left and right:
-            if node.left == trapezoid.leaf:
+            if node == self.root:
+                self.root = segment_left_node
+            elif node.left == trapezoid.leaf:
                 node.left = segment_left_node
             else:
                 node.right = segment_left_node

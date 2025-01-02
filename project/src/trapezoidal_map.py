@@ -167,6 +167,7 @@ class TrapezoidalMap:
     def update_map(self, trapezoids: list[Trapezoid], s: Segment):
         if len(trapezoids) == 1:
             top, bottom, left, right = TrapezoidalMap.divide_single_trapezoid(trapezoids[0], s)
+            trapezoids[0].leaf = Leaf(trapezoids[0])
             self.tree.update_single(trapezoids[0], s, top, bottom, left, right)
         else:
             splitted_trapezoids = []
