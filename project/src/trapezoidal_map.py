@@ -41,12 +41,15 @@ class TrapezoidalMap:
         bottom_left = trapezoid.bottom_left
         upper_segment = trapezoid.up
         lower_segment = trapezoid.down
+        left = None
 
-        left = Trapezoid(trapezoid.left, p, upper_segment, lower_segment)
-        left.connect_to_top_left(top_left)
-        left.connect_to_bottom_left(bottom_left)
-        left.connect_to_top_right(top)
-        left.connect_to_bottom_right(bottom)
+        if trapezoid.left.x < p.x:
+            left = Trapezoid(trapezoid.left, p, upper_segment, lower_segment)
+            left.connect_to_top_left(top_left)
+            left.connect_to_bottom_left(bottom_left)
+            left.connect_to_top_right(top)
+            left.connect_to_bottom_right(bottom)
+
         return left
 
     @staticmethod
@@ -56,12 +59,14 @@ class TrapezoidalMap:
         bottom_right = trapezoid.bottom_right
         upper_segment = trapezoid.up
         lower_segment = trapezoid.down
+        right = None
 
-        right = Trapezoid(q, trapezoid.right, upper_segment, lower_segment)
-        right.connect_to_top_right(top_right)
-        right.connect_to_bottom_right(bottom_right)
-        right.connect_to_top_left(top)
-        right.connect_to_bottom_left(bottom)
+        if trapezoid.right.x > q.x:
+            right = Trapezoid(q, trapezoid.right, upper_segment, lower_segment)
+            right.connect_to_top_right(top_right)
+            right.connect_to_bottom_right(bottom_right)
+            right.connect_to_top_left(top)
+            right.connect_to_bottom_left(bottom)
 
         return right
 
@@ -226,6 +231,7 @@ class TrapezoidalMap:
             if trapezoid in visited:
                 continue
             visited.add(trapezoid)
+            print(trapezoid)
 
             line_segments = trapezoid.get_segments(as_tuples=True)
             vis.add_line_segment(line_segments)

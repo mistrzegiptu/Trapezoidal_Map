@@ -211,9 +211,9 @@ class DTree:
         if not node:
             return None
 
+        if self.root == target_node:
+            return self.root
         if Node.is_leaf(node):
-            if self.root == target_node:
-                return self.root
             return None
 
         if node.right == target_node or node.left == target_node:
@@ -247,28 +247,32 @@ class DTree:
             segment_node.right = Leaf(down)
 
         elif left and not right:
-            if node.left == trapezoid.leaf:
+            if node == self.root:
+                self.root = segment_left_node
+            elif node.left == trapezoid.leaf:
                 node.left = segment_left_node
             else:
                 node.right = segment_left_node
 
-            segment_left_node.left = left
+            segment_left_node.left = Leaf(left)
             segment_left_node.right = segment_node
 
-            segment_node.left = up
-            segment_node.right = down
+            segment_node.left = Leaf(up)
+            segment_node.right = Leaf(down)
 
         elif not left and right:
-            if node.left == trapezoid.leaf:
+            if node == self.root:
+                self.root = segment_left_node
+            elif node.left == trapezoid.leaf:
                 node.left = segment_right_node
             else:
                 node.right = segment_right_node
 
             segment_left_node.left = segment_node
-            segment_left_node.right = right
+            segment_left_node.right = Leaf(right)
 
-            segment_node.left = up
-            segment_node.right = down
+            segment_node.left = Leaf(up)
+            segment_node.right = Leaf(down)
 
     def update_multiple(self, trapezoids: list[Trapezoid], segment: Segment, splitted_trapezoids: list[Tuple[Trapezoid, Trapezoid]]):
         n = len(splitted_trapezoids)
