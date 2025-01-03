@@ -130,6 +130,7 @@ class Trapezoid:
 class Leaf:
     def __init__(self, trapezoid: Trapezoid):
         self.trapezoid = trapezoid
+        self.trapezoid.leaf = self
 
     def __repr__(self) -> str:
         return f"{self.trapezoid}"
@@ -233,7 +234,7 @@ class DTree:
         segment_node = YNode(segment)
 
         if left and right:
-            if node == self.root:
+            if node == self.root and Node.is_leaf(node):
                 self.root = segment_left_node
             elif node.left == trapezoid.leaf:
                 node.left = segment_left_node
@@ -250,7 +251,7 @@ class DTree:
             segment_node.right = Leaf(down)
 
         elif left and not right:
-            if node == self.root:
+            if node == self.root and Node.is_leaf(node):
                 self.root = segment_left_node
             elif node.left == trapezoid.leaf:
                 node.left = segment_left_node
@@ -264,7 +265,7 @@ class DTree:
             segment_node.right = Leaf(down)
 
         elif not left and right:
-            if node == self.root:
+            if node == self.root and Node.is_leaf(node):
                 self.root = segment_right_node
             elif node.left == trapezoid.leaf:
                 node.left = segment_right_node
@@ -273,6 +274,17 @@ class DTree:
 
             segment_right_node.left = segment_node
             segment_right_node.right = Leaf(right)
+
+            segment_node.left = Leaf(up)
+            segment_node.right = Leaf(down)
+
+        else:
+            if node == self.root and Node.is_leaf(node):
+                self.root = segment_node
+            elif node.left == trapezoid.leaf:
+                node.left = segment_node
+            else:
+                node.right = segment_node
 
             segment_node.left = Leaf(up)
             segment_node.right = Leaf(down)
