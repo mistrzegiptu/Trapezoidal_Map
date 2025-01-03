@@ -9,11 +9,12 @@ class TrapezoidalMap:
         self.rect_bound = self.__create_rect_bound()
         self.tree = DTree()
         self.tree.root = Leaf(self.rect_bound)
+        self.root_trapezoid = None
 
     def build_trapezoidal_map(self):
         for i in range(len(self.segments)):
             intersected_trapezoids = self.follow_segment(self.segments[i])
-            self.update_map(intersected_trapezoids, self.segments[i])
+            self.root_trapezoid = self.update_map(intersected_trapezoids, self.segments[i])
 
         return self.tree
 
@@ -25,11 +26,12 @@ class TrapezoidalMap:
 
         j = 0
         while intersected_trapezoids[j].right < q:
-            if s.position(intersected_trapezoids[j].right) == Position.ABOVE:
-                intersected_trapezoids.append(intersected_trapezoids[j].bottom_right)
-            else:
+            if s.position(intersected_trapezoids[j].right) == Position.BELOW:
                 intersected_trapezoids.append(intersected_trapezoids[j].top_right)
+            else:
+                intersected_trapezoids.append(intersected_trapezoids[j].bottom_right)
             j += 1
+
         return intersected_trapezoids
 
     @staticmethod
@@ -45,9 +47,6 @@ class TrapezoidalMap:
         left.connect_to_bottom_left(bottom_left)
         left.connect_to_top_right(top)
         left.connect_to_bottom_right(bottom)
-        top.connect_to_top_left(left)
-        bottom.connect_to_bottom_left(left)
-
         return left
 
     @staticmethod
@@ -63,8 +62,6 @@ class TrapezoidalMap:
         right.connect_to_bottom_right(bottom_right)
         right.connect_to_top_left(top)
         right.connect_to_bottom_left(bottom)
-        top.connect_to_top_right(right)
-        bottom.connect_to_bottom_right(right)
 
         return right
 
@@ -122,12 +119,14 @@ class TrapezoidalMap:
         if bottom_prev.up is bottom.up and bottom_prev.down is bottom.down:
             bottom = Trapezoid(bottom_prev.left, bottom.right, bottom.up, bottom.down)
             bottom.connect_to_top_left(bottom_prev.top_left)
-            top.connect_to_bottom_left(bottom_prev.bottom_left)
+            bottom.connect_to_bottom_left(bottom_prev.bottom_left)
         else:
             bottom.connect_to_bottom_left(bottom_left)
             bottom.connect_to_bottom_right(bottom_right)
             if s.position(left_point) == Position.BELOW:
                 bottom.connect_to_top_left(bottom_prev)
+
+        return top, bottom
 
     @staticmethod
     def divide_middle_trapezoid(trapezoid: Trapezoid, s: Segment, top_prev: Trapezoid, bottom_prev: Trapezoid):
@@ -139,7 +138,7 @@ class TrapezoidalMap:
         top = Trapezoid(left_point, right_point, upper_segment, s)
         bottom = Trapezoid(left_point, right_point, s, lower_segment)
 
-        TrapezoidalMap.connect_or_merge_to_previous_trapezoids(trapezoid, top, bottom, top_prev, bottom_prev, s)
+        top, bottom = TrapezoidalMap.connect_or_merge_to_previous_trapezoids(trapezoid, top, bottom, top_prev, bottom_prev, s)
 
         return top, bottom
 
@@ -150,17 +149,17 @@ class TrapezoidalMap:
         bottom_right = trapezoid.bottom_right
         upper_segment = trapezoid.up
         lower_segment = trapezoid.down
-        right_point = trapezoid.right
+        left_point = trapezoid.left
 
-        top = Trapezoid(q, right_point, upper_segment, s)
-        bottom = Trapezoid(q, right_point, s, lower_segment)
+        top = Trapezoid(left_point, q, upper_segment, s)
+        bottom = Trapezoid(left_point, q, s, lower_segment)
 
         top.top_right = top_right
         bottom.bottom_right = bottom_right
 
-        right = TrapezoidalMap.get_right_trapezoid(trapezoid, top, bottom, s)
+        top, bottom = TrapezoidalMap.connect_or_merge_to_previous_trapezoids(trapezoid, top, bottom, top_prev, bottom_prev, s)
 
-        TrapezoidalMap.connect_or_merge_to_previous_trapezoids(trapezoid, top, bottom, top_prev, bottom_prev, s)
+        right = TrapezoidalMap.get_right_trapezoid(trapezoid, top, bottom, s)
 
         return top, bottom, right
 
@@ -169,6 +168,7 @@ class TrapezoidalMap:
             top, bottom, left, right = TrapezoidalMap.divide_single_trapezoid(trapezoids[0], s)
             trapezoids[0].leaf = Leaf(trapezoids[0])
             self.tree.update_single(trapezoids[0], s, top, bottom, left, right)
+            return right
         else:
             splitted_trapezoids = []
 
@@ -186,6 +186,7 @@ class TrapezoidalMap:
             top_prev, bottom_prev, right_prev = TrapezoidalMap.divide_rightmost_trapezoid(trapezoids[-1], s, top_prev, bottom_prev)
             trapezoids[-1].leaf = Leaf(trapezoids[-1])
             self.tree.update_single(trapezoids[-1], s, top_prev, bottom_prev, None, right_prev)
+            return right_prev
 
     @staticmethod
     def __create_segments(permuted_s) -> list[Segment]:
@@ -194,7 +195,6 @@ class TrapezoidalMap:
             start = Point(line[0][0], line[0][1])
             end = Point(line[1][0], line[1][1])
             result.append(Segment(start, end))
-
         return result
 
     def __create_rect_bound(self) -> Trapezoid:
@@ -217,7 +217,7 @@ class TrapezoidalMap:
 
     def get_visualizer(self) -> Visualizer:
         visited = set()
-        queue = [self.tree.root.trapezoid]
+        queue = [self.root_trapezoid]
         vis = Visualizer()
 
         while queue:
@@ -225,7 +225,6 @@ class TrapezoidalMap:
 
             if trapezoid in visited:
                 continue
-
             visited.add(trapezoid)
 
             line_segments = trapezoid.get_segments(as_tuples=True)

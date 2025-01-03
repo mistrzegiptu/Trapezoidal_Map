@@ -121,6 +121,9 @@ class Trapezoid:
     def __eq__(self, other: Trapezoid) -> bool:
         return self.up == other.up and self.down == other.down and self.left == other.left and self.right == other.right
 
+    def __hash__(self):
+        return id(self)
+
 class Leaf:
     def __init__(self, trapezoid: Trapezoid):
         self.trapezoid = trapezoid
