@@ -198,7 +198,7 @@ class DTree:
         else:
             position = node.s.position(point)
             if position == Position.ABOVE:
-                return self.find(node.right, point, a)
+                return self.find(node.left, point, a)
             elif position == Position.BELOW:
                 return self.find(node.right, point, a)
             else:
@@ -262,14 +262,14 @@ class DTree:
 
         elif not left and right:
             if node == self.root:
-                self.root = segment_left_node
+                self.root = segment_right_node
             elif node.left == trapezoid.leaf:
                 node.left = segment_right_node
             else:
                 node.right = segment_right_node
 
-            segment_left_node.left = segment_node
-            segment_left_node.right = Leaf(right)
+            segment_right_node.left = segment_node
+            segment_right_node.right = Leaf(right)
 
             segment_node.left = Leaf(up)
             segment_node.right = Leaf(down)
