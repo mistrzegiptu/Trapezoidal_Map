@@ -80,6 +80,9 @@ class Trapezoid:
 
         self.leaf = None
 
+    def get_neighbours(self):
+        return [self.top_left, self.bottom_left, self.top_right, self.bottom_right]
+
     def __repr__(self) -> str:
         return f"[{self.left}, {self.right}, {self.up}, {self.down}]"
 
