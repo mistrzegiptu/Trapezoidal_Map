@@ -14,6 +14,7 @@ class TrapezoidalMap:
     def build_trapezoidal_map(self):
         for i in range(len(self.segments)):
             intersected_trapezoids = self.follow_segment(self.segments[i])
+            print(intersected_trapezoids)
             self.root_trapezoid = self.update_map(intersected_trapezoids, self.segments[i])
             vis = self.get_visualizer()
             vis.show()
