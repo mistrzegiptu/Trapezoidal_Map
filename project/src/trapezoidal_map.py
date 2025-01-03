@@ -15,6 +15,8 @@ class TrapezoidalMap:
         for i in range(len(self.segments)):
             intersected_trapezoids = self.follow_segment(self.segments[i])
             self.root_trapezoid = self.update_map(intersected_trapezoids, self.segments[i])
+            vis = self.get_visualizer()
+            vis.show()
 
         return self.tree
 
@@ -173,7 +175,7 @@ class TrapezoidalMap:
             top, bottom, left, right = TrapezoidalMap.divide_single_trapezoid(trapezoids[0], s)
             trapezoids[0].leaf = Leaf(trapezoids[0])
             self.tree.update_single(trapezoids[0], s, top, bottom, left, right)
-            return right
+            return bottom
         else:
             splitted_trapezoids = []
 
@@ -191,7 +193,7 @@ class TrapezoidalMap:
             top_prev, bottom_prev, right_prev = TrapezoidalMap.divide_rightmost_trapezoid(trapezoids[-1], s, top_prev, bottom_prev)
             trapezoids[-1].leaf = Leaf(trapezoids[-1])
             self.tree.update_single(trapezoids[-1], s, top_prev, bottom_prev, None, right_prev)
-            return right_prev
+            return bottom_prev
 
     @staticmethod
     def __create_segments(permuted_s) -> list[Segment]:
@@ -231,7 +233,6 @@ class TrapezoidalMap:
             if trapezoid in visited:
                 continue
             visited.add(trapezoid)
-            print(trapezoid)
 
             line_segments = trapezoid.get_segments(as_tuples=True)
             vis.add_line_segment(line_segments)
