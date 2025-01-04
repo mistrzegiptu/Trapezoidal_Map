@@ -199,6 +199,7 @@ class TrapezoidalMap:
         else:
             tops = []
             bottoms = []
+            from_trapezoid = {}
 
             top_prev, bottom_prev, left = TrapezoidalMap.divide_leftmost_trapezoid(trapezoids[0], s)
             #trapezoids[0].leaf = Leaf(trapezoids[0])
@@ -207,14 +208,28 @@ class TrapezoidalMap:
             tops.append(top_prev)
             bottoms.append(bottom_prev)
 
+            from_trapezoid[top_prev] = {trapezoids[0]}
+            from_trapezoid[bottom_prev] = {trapezoids[0]}
+            from_trapezoid[left] = {trapezoids[0]}
+
             for i in range(1, len(trapezoids) - 1):
                 top_prev, bottom_prev, is_top_merged, is_bottom_merged = TrapezoidalMap.divide_middle_trapezoid(trapezoids[i], s, top_prev, bottom_prev)
                 #trapezoids[i].leaf = Leaf(trapezoids[i])
                 #splitted_trapezoids.append((top_prev, bottom_prev))
+                from_trapezoid[top_prev] = {trapezoids[i]}
+                from_trapezoid[bottom_prev] = {trapezoids[i]}
+
                 if is_top_merged:
-                    tops.pop()
+                    top_to_remove = tops.pop()
+                    top_to_remove_trapezoids = from_trapezoid[top_to_remove]
+                    del from_trapezoid[top_to_remove]
+                    from_trapezoid[top_prev] |= top_to_remove_trapezoids
                 if is_bottom_merged:
-                    bottoms.pop()
+                    bottom_to_remove = bottoms.pop()
+                    bottom_to_remove_trapezoids = from_trapezoid[bottom_to_remove]
+                    del from_trapezoid[bottom_to_remove]
+                    from_trapezoid[bottom_prev] |= bottom_to_remove_trapezoids
+
                 tops.append(top_prev)
                 tops.append(bottom_prev)
 
@@ -225,10 +240,20 @@ class TrapezoidalMap:
 
             top_prev, bottom_prev, right, is_top_merged, is_bottom_merged = TrapezoidalMap.divide_rightmost_trapezoid(trapezoids[-1], s, top_prev, bottom_prev)
 
+            from_trapezoid[top_prev] = {trapezoids[-1]}
+            from_trapezoid[bottom_prev] = {trapezoids[-1]}
+
             if is_top_merged:
-                tops.pop()
+                top_to_remove = tops.pop()
+                top_to_remove_trapezoids = from_trapezoid[top_to_remove]
+                del from_trapezoid[top_to_remove]
+                from_trapezoid[top_prev] |= top_to_remove_trapezoids
             if is_bottom_merged:
-                bottoms.pop()
+                bottom_to_remove = bottoms.pop()
+                bottom_to_remove_trapezoids = from_trapezoid[bottom_to_remove]
+                del from_trapezoid[bottom_to_remove]
+                from_trapezoid[bottom_prev] |= bottom_to_remove_trapezoids
+
             tops.append(top_prev)
             tops.append(bottom_prev)
 
