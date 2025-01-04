@@ -146,7 +146,7 @@ class TrapezoidalMap:
             bottom = Trapezoid(bottom_prev.left, bottom.right, bottom.up, bottom.down)
             bottom.connect_to_top_left(bottom_prev.top_left)
             bottom.connect_to_bottom_left(bottom_prev.bottom_left)
-            is_top_merged = True
+            is_bottom_merged = True
         else:
             bottom.connect_to_bottom_left(bottom_left)
             if s.position(left_point) == Position.BELOW:
@@ -231,10 +231,7 @@ class TrapezoidalMap:
                     from_trapezoid[bottom_prev] |= bottom_to_remove_trapezoids
 
                 tops.append(top_prev)
-                tops.append(bottom_prev)
-
-            vis = TrapezoidalMap.get_visualizer(top_prev, TrapezoidalMap.segments)
-            vis.show()
+                bottoms.append(bottom_prev)
 
             #self.tree.update_multiple(trapezoids[1:-2:], s, splitted_trapezoids)
 
@@ -255,7 +252,10 @@ class TrapezoidalMap:
                 from_trapezoid[bottom_prev] |= bottom_to_remove_trapezoids
 
             tops.append(top_prev)
-            tops.append(bottom_prev)
+            bottoms.append(bottom_prev)
+
+            vis = TrapezoidalMap.get_visualizer(top_prev, TrapezoidalMap.segments)
+            vis.show()
 
             for top in tops:
                 for trapezoid in from_trapezoid[top]:
@@ -266,6 +266,8 @@ class TrapezoidalMap:
                     splitted_trapezoids[trapezoid].append(bot)
 
             self.tree.update_single(trapezoids[0], s, splitted_trapezoids[trapezoids[0]][0], splitted_trapezoids[trapezoids[0]][1], left, None)
+            print(tops)
+            print(bottoms)
             self.tree.update_multiple(trapezoids[1:-2], s, splitted_trapezoids)
             self.tree.update_single(trapezoids[-1], s, top_prev, bottom_prev, None, right)
 
