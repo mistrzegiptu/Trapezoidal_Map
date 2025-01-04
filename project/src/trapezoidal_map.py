@@ -5,10 +5,11 @@ import random
 class TrapezoidalMap:
     visualizers = 0
     segments = None
+
     def __init__(self, S: list[tuple[tuple[float, float], tuple[float, float]]]):
-        #permuted_s = random.sample(S, len(S)) #TODO: dont't forget about uncommenting this
-        permuted_s = S
+        permuted_s = random.sample(S, len(S)) #TODO: dont't forget about uncommenting this
         self.segments = self.__create_segments(permuted_s)
+        self.used_segments = []
         self.rect_bound = self.__create_rect_bound()
         self.tree = DTree()
         self.tree.root = Leaf(self.rect_bound)
@@ -22,8 +23,6 @@ class TrapezoidalMap:
             used_segments.append(self.segments[i].to_tuple())
             intersected_trapezoids = self.follow_segment(self.segments[i])
             self.root_trapezoid = self.update_map(intersected_trapezoids, self.segments[i])
-            vis = TrapezoidalMap.get_visualizer(self.root_trapezoid, used_segments)
-            vis.show()
 
         return self.tree
 
@@ -31,8 +30,6 @@ class TrapezoidalMap:
         p, q = s.get_points()
         intersected_trapezoids = []
         first_trapezoid = self.tree.find(self.tree.root, p, s.a)
-        print("Iter: ", TrapezoidalMap.visualizers)
-        print(first_trapezoid)
         intersected_trapezoids.append(first_trapezoid)
 
         j = 0
@@ -43,6 +40,7 @@ class TrapezoidalMap:
                 intersected_trapezoids.append(intersected_trapezoids[j].bottom_right)
             j += 1
 
+        print("Intersected:", intersected_trapezoids)
         return intersected_trapezoids
 
     @staticmethod
@@ -196,6 +194,9 @@ class TrapezoidalMap:
             top, bottom, left, right = TrapezoidalMap.divide_single_trapezoid(trapezoids[0], s)
             trapezoids[0].leaf = Leaf(trapezoids[0])
             self.tree.update_single(trapezoids[0], s, top, bottom, left, right)
+            self.used_segments.append(s.to_tuple())
+            vis = TrapezoidalMap.get_visualizer(top, self.used_segments)
+            vis.show()
             return top
         else:
             tops = []
@@ -254,9 +255,6 @@ class TrapezoidalMap:
             tops.append(top_prev)
             bottoms.append(bottom_prev)
 
-            vis = TrapezoidalMap.get_visualizer(top_prev, TrapezoidalMap.segments)
-            vis.show()
-
             for top in tops:
                 for trapezoid in from_trapezoid[top]:
                     splitted_trapezoids[trapezoid] = [top]
@@ -265,9 +263,14 @@ class TrapezoidalMap:
                 for trapezoid in from_trapezoid[bot]:
                     splitted_trapezoids[trapezoid].append(bot)
 
-            self.tree.update_single(trapezoids[0], s, splitted_trapezoids[trapezoids[0]][0], splitted_trapezoids[trapezoids[0]][1], left, None)
+            print(s)
             print(tops)
             print(bottoms)
+            self.used_segments.append(s.to_tuple())
+            vis = TrapezoidalMap.get_visualizer(top_prev, self.used_segments)
+            vis.show()
+
+            self.tree.update_single(trapezoids[0], s, splitted_trapezoids[trapezoids[0]][0], splitted_trapezoids[trapezoids[0]][1], left, None)
             self.tree.update_multiple(trapezoids[1:-2], s, splitted_trapezoids)
             self.tree.update_single(trapezoids[-1], s, top_prev, bottom_prev, None, right)
 
@@ -313,10 +316,13 @@ class TrapezoidalMap:
             if trapezoid in visited:
                 continue
             visited.add(trapezoid)
+
+            """
             print("----------------------")
             print("Trapezoid: ", trapezoid)
             for n in trapezoid.get_neighbours():
                 print(n)
+            """
 
             line_segments = trapezoid.get_segments(as_tuples=True)
             vis.add_line_segment(line_segments)
