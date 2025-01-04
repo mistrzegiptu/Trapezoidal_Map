@@ -289,10 +289,10 @@ class DTree:
             segment_node.left = Leaf(up)
             segment_node.right = Leaf(down)
 
-    def update_multiple(self, trapezoids: list[Trapezoid], segment: Segment, splitted_trapezoids: list[Tuple[Trapezoid, Trapezoid]]):
-        n = len(splitted_trapezoids)
+    def update_multiple(self, trapezoids: list[Trapezoid], segment: Segment, splitted_trapezoids: dict):
+        n = len(trapezoids)
 
-        for i in range(1, n):
+        for i in range(n):
             trapezoid = trapezoids[i]
             node = self.find_parent(self.root, trapezoid.leaf)
             segment_node = YNode(segment)
@@ -302,5 +302,5 @@ class DTree:
             else:
                 node.right = segment_node
 
-            segment_node.left = splitted_trapezoids[0][i]
-            segment_node.right = splitted_trapezoids[0][i]
+            segment_node.left = splitted_trapezoids[trapezoids[i]][0]
+            segment_node.right = splitted_trapezoids[trapezoids[i]][1]
