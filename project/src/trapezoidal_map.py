@@ -7,7 +7,7 @@ class TrapezoidalMap:
     segments = None
 
     def __init__(self, S: list[tuple[tuple[float, float], tuple[float, float]]]):
-        permuted_s = random.sample(S, len(S)) #TODO: dont't forget about uncommenting this
+        permuted_s = random.sample(S, len(S))
         self.segments = self.__create_segments(permuted_s)
         self.used_segments = []
         self.rect_bound = self.__create_rect_bound()
@@ -255,6 +255,9 @@ class TrapezoidalMap:
             tops.append(top_prev)
             bottoms.append(bottom_prev)
 
+            #vis = TrapezoidalMap.get_visualizer(top_prev, TrapezoidalMap.segments)
+            #vis.show()
+
             for top in tops:
                 for trapezoid in from_trapezoid[top]:
                     splitted_trapezoids[trapezoid] = [top]
@@ -271,8 +274,8 @@ class TrapezoidalMap:
             vis.show()
 
             self.tree.update_single(trapezoids[0], s, splitted_trapezoids[trapezoids[0]][0], splitted_trapezoids[trapezoids[0]][1], left, None)
-            self.tree.update_multiple(trapezoids[1:-2], s, splitted_trapezoids)
-            self.tree.update_single(trapezoids[-1], s, top_prev, bottom_prev, None, right)
+            self.tree.update_multiple(trapezoids[1:-1], s, splitted_trapezoids)
+            self.tree.update_single(trapezoids[-1], s, splitted_trapezoids[trapezoids[-1]][0], splitted_trapezoids[trapezoids[-1]][1], None, right)
 
             return top_prev
 

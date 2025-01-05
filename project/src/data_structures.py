@@ -302,5 +302,5 @@ class DTree:
             else:
                 node.right = segment_node
 
-            segment_node.left = splitted_trapezoids[trapezoids[i]][0]
-            segment_node.right = splitted_trapezoids[trapezoids[i]][1]
+            segment_node.left = Leaf(splitted_trapezoids[trapezoids[i]][0])
+            segment_node.right = Leaf(splitted_trapezoids[trapezoids[i]][1])
