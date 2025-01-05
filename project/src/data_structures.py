@@ -191,28 +191,39 @@ class DTree:
     def __init__(self):
         self.root = None
 
-    def find(self, node: (Node, YNode, XNode), point: Point, a: float = None):
+    def find(self, node: (Node, YNode, XNode), point: Point, a: float = None, tail: Node = None, parent: list[Node] = []):
         if Node.is_leaf(node):
+            parent.append(tail)
             return node.trapezoid
         elif Node.is_x_node(node):
             if node.p > point:
-                return self.find(node.left, point, a)
+                return self.find(node.left, point, a, node, parent)
             else:
-                return self.find(node.right, point, a)
+                return self.find(node.right, point, a, node, parent)
         else:
             position = node.s.position(point)
             if position == Position.ABOVE:
-                return self.find(node.left, point, a)
+                return self.find(node.left, point, a, node, parent)
             elif position == Position.BELOW:
-                return self.find(node.right, point, a)
+                return self.find(node.right, point, a, node, parent)
             else:
                 if node.s.a < a:
-                    return self.find(node.left, point, a)
+                    return self.find(node.left, point, a, node, parent)
                 else:
-                    return self.find(node.right, point, a)
+                    return self.find(node.right, point, a, node, parent)
 
     def find_parent(self, node: Node, target_node: Leaf):
-        if not node:
+        trapezoid = target_node.trapezoid
+        mid_x = (trapezoid.left.x+trapezoid.right.x) / 2
+        mid_point = Point(mid_x, trapezoid.down.a * mid_x + trapezoid.down.b + 10**(-12))
+        parent = []
+        self.find(self.root, mid_point, None, None, parent)
+        if self.root == target_node:
+            return self.root
+        if len(parent) == 1:
+            return parent[0]
+        return None
+        '''if not node:
             return None
 
         if self.root == target_node:
@@ -223,7 +234,7 @@ class DTree:
         if node.right == target_node or node.left == target_node:
             return node
 
-        return self.find_parent(node.right, target_node) or self.find_parent(node.left, target_node)
+        return self.find_parent(node.right, target_node) or self.find_parent(node.left, target_node)'''
 
     def update_single(self, trapezoid: Trapezoid, segment: Segment, up: Trapezoid, down: Trapezoid, left: (Trapezoid, None), right: (Trapezoid, None)):
         node = self.find_parent(self.root, trapezoid.leaf)

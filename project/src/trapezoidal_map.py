@@ -8,6 +8,7 @@ class TrapezoidalMap:
 
     def __init__(self, S: list[tuple[tuple[float, float], tuple[float, float]]]):
         permuted_s = random.sample(S, len(S))
+        #permuted_s = S
         self.segments = self.__create_segments(permuted_s)
         self.used_segments = []
         self.rect_bound = self.__create_rect_bound()
