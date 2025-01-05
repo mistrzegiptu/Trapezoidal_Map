@@ -134,8 +134,9 @@ class Trapezoid:
 
 class Leaf:
     def __init__(self, trapezoid: Trapezoid):
-        self.trapezoid = trapezoid
-        self.trapezoid.leaf = self
+        if trapezoid is not None:
+            self.trapezoid = trapezoid
+            self.trapezoid.leaf = self
 
     def __repr__(self) -> str:
         return f"{self.trapezoid}"

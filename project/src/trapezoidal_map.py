@@ -204,7 +204,6 @@ class TrapezoidalMap:
                 left.node = Node(Leaf(left))
             if right:
                 right.node = Node(Leaf(right))
-
             self.tree.update_single(trapezoids[0], s, top, bottom, left, right)
         else:
             tops = []
@@ -270,6 +269,7 @@ class TrapezoidalMap:
                     splitted_trapezoids[trapezoid].append(bot)
                     if bot.node is None:
                         bot.node = Node(Leaf(bot))
+
 
             if left:
                 left.node = Node(Leaf(left))
