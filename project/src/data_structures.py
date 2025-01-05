@@ -129,8 +129,9 @@ class Trapezoid:
 
 class Leaf:
     def __init__(self, trapezoid: Trapezoid):
-        self.trapezoid = trapezoid
-        self.trapezoid.leaf = self
+        if trapezoid is not None:
+            self.trapezoid = trapezoid
+            self.trapezoid.leaf = self
 
     def __repr__(self) -> str:
         return f"{self.trapezoid}"
@@ -252,14 +253,14 @@ class DTree:
             else:
                 node.right = segment_left_node
 
-            segment_left_node.left = Leaf(left)
+            segment_left_node.left = left.leaf
             segment_left_node.right = segment_right_node
 
             segment_right_node.left = segment_node
-            segment_right_node.right = Leaf(right)
+            segment_right_node.right = right.leaf
 
-            segment_node.left = Leaf(up)
-            segment_node.right = Leaf(down)
+            segment_node.left = up.leaf
+            segment_node.right = down.leaf
 
         elif left and not right:
             if node == self.root and Node.is_leaf(node):
@@ -269,11 +270,11 @@ class DTree:
             else:
                 node.right = segment_left_node
 
-            segment_left_node.left = Leaf(left)
+            segment_left_node.left = left.leaf
             segment_left_node.right = segment_node
 
-            segment_node.left = Leaf(up)
-            segment_node.right = Leaf(down)
+            segment_node.left = up.leaf
+            segment_node.right = down.leaf
 
         elif not left and right:
             if node == self.root and Node.is_leaf(node):
@@ -284,10 +285,10 @@ class DTree:
                 node.right = segment_right_node
 
             segment_right_node.left = segment_node
-            segment_right_node.right = Leaf(right)
+            segment_right_node.right = right.leaf
 
-            segment_node.left = Leaf(up)
-            segment_node.right = Leaf(down)
+            segment_node.left = up.leaf
+            segment_node.right = down.leaf
 
         else:
             if node == self.root and Node.is_leaf(node):
@@ -297,8 +298,8 @@ class DTree:
             else:
                 node.right = segment_node
 
-            segment_node.left = Leaf(up)
-            segment_node.right = Leaf(down)
+            segment_node.left = up.leaf
+            segment_node.right = down.leaf
 
     def update_multiple(self, trapezoids: list[Trapezoid], segment: Segment, splitted_trapezoids: dict):
         n = len(trapezoids)
@@ -313,5 +314,5 @@ class DTree:
             else:
                 node.right = segment_node
 
-            segment_node.left = Leaf(splitted_trapezoids[trapezoids[i]][0])
-            segment_node.right = Leaf(splitted_trapezoids[trapezoids[i]][1])
+            segment_node.left = splitted_trapezoids[trapezoids[i]][0].leaf
+            segment_node.right = splitted_trapezoids[trapezoids[i]][1].leaf
