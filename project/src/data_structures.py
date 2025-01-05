@@ -99,7 +99,7 @@ class Trapezoid:
         p = self.get_points(as_tuples)
         if not as_tuples:
             return Segment(p[0], p[1]), Segment(p[1], p[2]), Segment(p[2], p[3]), Segment(p[3], p[0])
-        return (p[0], p[1]), (p[1], p[2]), (p[2], p[3]), (p[3], p[0])
+        return (p[1], p[2]), (p[3], p[0])
 
     def connect_to_top_left(self, trapezoid: (Trapezoid, None)):
         self.top_left = trapezoid
@@ -136,81 +136,79 @@ class Leaf:
         return f"{self.trapezoid}"
 
     def __eq__(self, other: Leaf) -> bool:
-        if Node.are_same_type(self, other):
-            return self.trapezoid == other.trapezoid
-
-        return False
+        return self.trapezoid == other.trapezoid
 
 class Node:
-    def __init__(self):
-        self.left = None
-        self.right = None
+    def __init__(self, node: (XNode, YNode, Leaf)):
+        self.node = node
 
-    @staticmethod
-    def is_x_node(node: (Node, Leaf)) -> bool:
-        return isinstance(node, XNode)
+    def is_x_node(self) -> bool:
+        return isinstance(self.node, XNode)
 
-    @staticmethod
-    def is_y_node(node: (Node, Leaf)) -> bool:
-        return isinstance(node, YNode)
+    def is_y_node(self) -> bool:
+        return isinstance(self.node, YNode)
 
-    @staticmethod
-    def is_leaf(node: (Node, Leaf)) -> bool:
-        return isinstance(node, Leaf)
+    def is_leaf(self) -> bool:
+        return isinstance(self.node, Leaf)
 
-    @staticmethod
-    def are_same_type(first: Node, second: Node):
-        if (Node.is_leaf(first) and Node.is_leaf(second)) or (Node.is_y_node(first) and Node.is_y_node(second)) or (Node.is_x_node(first) and Node.is_x_node(second)):
+    def are_same_type(self, second: Node):
+        if (self.is_leaf() and second.is_leaf()) or (self.is_y_node() and second.is_y_node()) or (
+                self.is_x_node() and second.is_x_node()):
             return True
 
         return False
 
-class XNode(Node):
+    def __eq__(self, other: Node):
+        if self.are_same_type(other):
+            return self.node == other.node
+        return False
+
+class XYNode:
+    def __init__(self):
+        self.left = None
+        self.right = None
+
+
+class XNode(XYNode):
     def __init__(self, p: Point):
         super().__init__()
         self.p = p
 
-    def __eq__(self, other):
-        if Node.are_same_type(self, other):
-            return self.p == other.p
+    def __eq__(self, other: XNode):
+        return self.p == other.p
 
-        return False
-
-class YNode(Node):
+class YNode(XYNode):
     def __init__(self, s: Segment):
         super().__init__()
         self.s = s
 
-    def __eq__(self, other):
-        if Node.are_same_type(self, other):
-            return self.s == other.s
-
-        return False
+    def __eq__(self, other: YNode):
+        return self.s == other.s
 
 class DTree:
     def __init__(self):
         self.root = None
 
-    def find(self, node: (Node, YNode, XNode), point: Point, a: float = None, tail: Node = None, parent: list[Node] = []):
-        if Node.is_leaf(node):
+    def find(self, node: Node, point: Point, a: float = None, tail: Node = None, parent: list[Node] = []):
+        if node.is_leaf():
             parent.append(tail)
-            return node.trapezoid
-        elif Node.is_x_node(node):
-            if node.p > point:
-                return self.find(node.left, point, a, node, parent)
+            return node.node.trapezoid
+        elif node.is_x_node():
+            if node.node.p > point:
+                return self.find(node.node.left, point, a, node, parent)
             else:
-                return self.find(node.right, point, a, node, parent)
+                return self.find(node.node.right, point, a, node, parent)
         else:
-            position = node.s.position(point)
+            position = node.node.s.position(point)
             if position == Position.ABOVE:
-                return self.find(node.left, point, a, node, parent)
+                return self.find(node.node.left, point, a, node, parent)
             elif position == Position.BELOW:
-                return self.find(node.right, point, a, node, parent)
+                return self.find(node.node.right, point, a, node, parent)
             else:
-                if node.s.a < a:
-                    return self.find(node.left, point, a, node, parent)
+                if node.node.s.a < a:
+                    return self.find(node.node.left, point, a, node, parent)
                 else:
-                    return self.find(node.right, point, a, node, parent)
+                    return self.find(node.node.right, point, a, node, parent)
 
     def find_parent(self, node: Node, target_node: Leaf):
         trapezoid = target_node.trapezoid
@@ -228,7 +226,7 @@ class DTree:
 
         if self.root == target_node:
             return self.root
-        if Node.is_leaf(node):
+        if node.is_leaf():
             return None
 
         if node.right == target_node or node.left == target_node:
@@ -245,7 +243,7 @@ class DTree:
         segment_node = YNode(segment)
 
         if left and right:
-            if node == self.root and Node.is_leaf(node):
+            if node == self.root and node.is_leaf():
                 self.root = segment_left_node
             elif node.left == trapezoid.leaf:
                 node.left = segment_left_node
@@ -262,7 +260,7 @@ class DTree:
             segment_node.right = Leaf(down)
 
         elif left and not right:
-            if node == self.root and Node.is_leaf(node):
+            if node == self.root and node.is_leaf():
                 self.root = segment_left_node
             elif node.left == trapezoid.leaf:
                 node.left = segment_left_node
@@ -276,7 +274,7 @@ class DTree:
             segment_node.right = Leaf(down)
 
         elif not left and right:
-            if node == self.root and Node.is_leaf(node):
+            if node == self.root and node.is_leaf():
                 self.root = segment_right_node
             elif node.left == trapezoid.leaf:
                 node.left = segment_right_node
@@ -288,9 +286,8 @@ class DTree:
 
             segment_node.left = Leaf(up)
             segment_node.right = Leaf(down)
-
         else:
-            if node == self.root and Node.is_leaf(node):
+            if node == self.root and node.is_leaf():
                 self.root = segment_node
             elif node.left == trapezoid.leaf:
                 node.left = segment_node
