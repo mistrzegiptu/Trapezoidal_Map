@@ -1,6 +1,11 @@
 from __future__ import annotations
 from typing import Tuple
-from .utils import Position
+from enum import Enum
+
+class Position(Enum):
+    BELOW = -1
+    ON = 0
+    ABOVE = 1
 
 class Point:
     def __init__(self, x: float, y: float):
@@ -205,6 +210,8 @@ class DTree:
             elif position == Position.BELOW:
                 return self.find(node.node.right, point, a, parent)
             else:
+                if a == None:
+                    return self.find(node.node.left, point, a, parent)
                 if node.node.s.a < a:
                     return self.find(node.node.left, point, a, parent)
                 else:
@@ -272,7 +279,7 @@ class DTree:
 
         elif not left and right:
             if to_swap == self.root:
-                self.root.node = segment_left.node
+                self.root.node = segment_right.node
             else:
                 to_swap.node = segment_right.node
 
