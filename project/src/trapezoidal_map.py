@@ -12,10 +12,10 @@ class TrapezoidalMap:
         self.tree = DTree()
         self.tree.root = Node(Leaf(self.rect_bound))
 
-        #self.vis = Visualizer()
-        #self.vis.add_line_segment([self.rect_bound.up.to_tuple(), self.rect_bound.down.to_tuple()], color='red')
-        #ls = self.vis.add_line_segment(self.rect_bound.get_segments(as_tuples=True))
-        #self.get_remove_handle = {self.rect_bound : ls}
+        self.vis = Visualizer()
+        self.vis.add_line_segment([self.rect_bound.up.to_tuple(), self.rect_bound.down.to_tuple()], color='red')
+        ls = self.vis.add_line_segment(self.rect_bound.get_segments(as_tuples=True))
+        self.get_remove_handle = {self.rect_bound : ls}
 
     def build_trapezoidal_map(self):
         for i in range(len(self.segments)):
@@ -27,8 +27,6 @@ class TrapezoidalMap:
     def follow_segment(self, s: Segment):
         p, q = s.get_points()
         intersected_trapezoids = []
-        #s = s # ?
-        #print(s)
         first_trapezoid = self.tree.find(self.tree.root, p, s.a)
 
         intersected_trapezoids.append(first_trapezoid)
@@ -80,9 +78,9 @@ class TrapezoidalMap:
             right.connect_to_bottom_right(bottom_right)
             right.connect_to_top_left(top)
             right.connect_to_bottom_left(bottom)
-#        else:
-#            top.connect_to_top_right(top_right)
-#            bottom.connect_to_bottom_right(bottom_right)
+        else:
+            top.connect_to_top_right(top_right)
+            bottom.connect_to_bottom_right(bottom_right)
 
         return right
 
@@ -197,8 +195,8 @@ class TrapezoidalMap:
             dict_to_visualize = {}
             for t in list_to_visualize:
                 dict_to_visualize[t] = {trapezoids[0]}
-            #self.update_visualizer([left, top, bottom, right], s, dict_to_visualize)
-            #trapezoids[0].leaf = Leaf(trapezoids[0])
+            self.update_visualizer([left, top, bottom, right], s, dict_to_visualize)
+            trapezoids[0].leaf = Leaf(trapezoids[0])
             self.tree.update_single(trapezoids[0], s, top, bottom, left, right)
         else:
             tops = []
@@ -261,7 +259,7 @@ class TrapezoidalMap:
                 for trapezoid in from_trapezoid[bot]:
                     splitted_trapezoids[trapezoid].append(bot)
 
-            #self.update_visualizer([left] + tops + bottoms + [right], s, from_trapezoid)
+            self.update_visualizer([left] + tops + bottoms + [right], s, from_trapezoid)
 
             self.tree.update_single(trapezoids[0], s, splitted_trapezoids[trapezoids[0]][0], splitted_trapezoids[trapezoids[0]][1], left, None)
             self.tree.update_multiple(trapezoids[1:-1], s, splitted_trapezoids)
@@ -294,31 +292,6 @@ class TrapezoidalMap:
 
         return Trapezoid(Point(min_x, min_y), Point(max_x, max_y), topSegment, bottomSegment)
 
-    @staticmethod
-    def get_visualizer(trapezoid, segments) -> Visualizer:
-        visited = set()
-        queue = [trapezoid]
-        vis = Visualizer()
-
-        while queue:
-            trapezoid = queue.pop(0)
-
-            if trapezoid in visited:
-                continue
-            visited.add(trapezoid)
-
-            line_segments = trapezoid.get_segments(as_tuples=True)
-            vis.add_line_segment(line_segments)
-
-            for neighbor in [trapezoid.top_left, trapezoid.bottom_left, trapezoid.bottom_right,
-                             trapezoid.top_right]:
-                if neighbor and neighbor not in visited:
-                    queue.append(neighbor)
-
-        vis.add_line_segment(segments, color='red')
-
-        return vis
-
     def update_visualizer(self, trapezoids: list[Trapezoid], s: Segment, split_trapezoids: dict[Trapezoid, set[Trapezoid]]):
         self.vis.add_line_segment(s.to_tuple(), color='red')
         for trapezoid in trapezoids:
@@ -332,7 +305,6 @@ class TrapezoidalMap:
             if trapezoid is not None:
                 ls = self.vis.add_line_segment(trapezoid.get_segments(as_tuples=True))
                 self.get_remove_handle[trapezoid] = ls
-
 
 
 

@@ -1,16 +1,16 @@
 def generateParallelSegments(maxX, maxY, n):
-    divider = maxY / 2.0
-    above = n // 2
-    below = n - n // 2
+    delta_x = maxX / (2 * n + 2)
+    delta_y = maxY / n
+    y = maxY
+    x_max = maxX
+    x_min = 0
     segments = []
 
-    deltaX = deltaY = (maxY - divider) / (above + 1)
-    for i in range(1, above + 1):
-        segments.append(((i * deltaX, divider + deltaY), (maxX - i * deltaX, divider + deltaY)))
-
-    deltaY = divider / (below + 1)
-    for i in range(1, below + 1):
-        segments.append((((i - 0.5) * deltaX, divider - deltaY), (maxX - (i - 0.5) * deltaX, divider - deltaY)))
+    for _ in range(n):
+        y -= delta_y
+        x_max -= delta_x
+        x_min += delta_x
+        segments.append(((x_min, y), (x_max, y)))
 
     return segments
 
