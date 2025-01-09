@@ -134,8 +134,9 @@ class Trapezoid:
 
 class Leaf:
     def __init__(self, trapezoid: Trapezoid):
-        self.trapezoid = trapezoid
-        self.trapezoid.leaf = self
+        if trapezoid is not None:
+            self.trapezoid = trapezoid
+            self.trapezoid.leaf = self
 
     def __repr__(self) -> str:
         return f"{self.trapezoid}"
@@ -272,7 +273,6 @@ class DTree:
 
             segment.node.left = up.node
             segment.node.right = down.node
-
         else:
             if to_swap == self.root:
                 self.root.node = segment.node
@@ -281,6 +281,7 @@ class DTree:
 
             segment.node.left = up.node
             segment.node.right = down.node
+
 
     def update_multiple(self, trapezoids: list[Trapezoid], s: Segment, splitted_trapezoids: dict):
         n = len(trapezoids)

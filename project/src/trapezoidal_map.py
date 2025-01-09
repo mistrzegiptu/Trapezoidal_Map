@@ -204,7 +204,6 @@ class TrapezoidalMap:
                 left.node = Node(Leaf(left))
             if right:
                 right.node = Node(Leaf(right))
-
             self.tree.update_single(trapezoids[0], s, top, bottom, left, right)
         else:
             tops = []
