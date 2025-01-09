@@ -83,7 +83,7 @@ class Trapezoid:
         self.top_right = None
         self.bottom_right = None
 
-        self.leaf = None
+        self.node = None
 
     def get_neighbours(self):
         return [self.top_left, self.bottom_left, self.top_right, self.bottom_right]
@@ -194,55 +194,39 @@ class DTree:
     def __init__(self):
         self.root = None
 
-    def find(self, node: Node, point: Point, a: float = None, parent: list[Node] = []):
+    def find(self, node: Node, point: Point, a: float = None):
         if node.is_leaf():
-            parent.append(node)
-            return node.node.trapezoid
+            return node
         elif node.is_x_node():
             if node.node.p > point:
-                return self.find(node.node.left, point, a, parent)
+                return self.find(node.node.left, point, a)
             else:
-                return self.find(node.node.right, point, a, parent)
+                return self.find(node.node.right, point, a)
         else:
             position = node.node.s.position(point)
             if position == Position.ABOVE:
-                return self.find(node.node.left, point, a, parent)
+                return self.find(node.node.left, point, a)
             elif position == Position.BELOW:
-                return self.find(node.node.right, point, a, parent)
+                return self.find(node.node.right, point, a)
             else:
-                if a == None:
-                    return self.find(node.node.left, point, a, parent)
                 if node.node.s.a < a:
-                    return self.find(node.node.left, point, a, parent)
+                    return self.find(node.node.left, point, a)
                 else:
-                    return self.find(node.node.right, point, a, parent)
+                    return self.find(node.node.right, point, a)
 
-    def find_node(self, target_node: Leaf):
-        trapezoid = target_node.trapezoid
+    def find_node(self, target_node: Node):
+        trapezoid = target_node.node.trapezoid
         mid_x = (trapezoid.left.x+trapezoid.right.x) / 2
-        mid_point = Point(mid_x, trapezoid.down.a * mid_x + trapezoid.down.b + 10**(-12))
-        parent = []
-        self.find(self.root, mid_point, None, parent)
-        if self.root == Node(target_node):
-            return self.root
-        if len(parent) == 1:
-            return parent[0]
-        return None
-        '''if not node:
-            return None
+        mid_upper_y = trapezoid.up.a * mid_x + trapezoid.up.b
+        mid_lower_y = trapezoid.down.a * mid_x + trapezoid.down.b
+        mid_point = Point(mid_x, mid_lower_y + (mid_upper_y - mid_lower_y) / 2)
 
-        if self.root == target_node:
-            return self.root
-        if node.is_leaf():
-            return None
+        node_found = self.find(self.root, mid_point, trapezoid.down.a)
 
-        if node.right == target_node or node.left == target_node:
-            return node
-
-        return self.find_parent(node.right, target_node) or self.find_parent(node.left, target_node)'''
+        return node_found
 
     def update_single(self, trapezoid: Trapezoid, s: Segment, up: Trapezoid, down: Trapezoid, left: (Trapezoid, None), right: (Trapezoid, None)):
-        to_swap = self.find_node(trapezoid.leaf)
+        to_swap = self.find_node(trapezoid.node)
         p, q = s.get_points()
 
         segment_left = Node(XNode(p))
@@ -256,14 +240,14 @@ class DTree:
             else:
                 to_swap.node = segment_left.node
 
-            segment_left.node.left = Node(Leaf(left))
+            segment_left.node.left = left.node
             segment_left.node.right = segment_right
 
             segment_right.node.left = segment
-            segment_right.node.right = Node(Leaf(right))
+            segment_right.node.right = right.node
 
-            segment.node.left = Node(Leaf(up))
-            segment.node.right = Node(Leaf(down))
+            segment.node.left = up.node
+            segment.node.right = down.node
 
         elif left and not right:
             if to_swap == self.root:
@@ -271,11 +255,11 @@ class DTree:
             else:
                 to_swap.node = segment_left.node
 
-            segment_left.node.left = Node(Leaf(left))
+            segment_left.node.left = left.node
             segment_left.node.right = segment
 
-            segment.node.left = Node(Leaf(up))
-            segment.node.right = Node(Leaf(down))
+            segment.node.left = up.node
+            segment.node.right = down.node
 
         elif not left and right:
             if to_swap == self.root:
@@ -284,10 +268,10 @@ class DTree:
                 to_swap.node = segment_right.node
 
             segment_right.node.left = segment
-            segment_right.node.right = Node(Leaf(right))
+            segment_right.node.right = right.node
 
-            segment.node.left = Node(Leaf(up))
-            segment.node.right = Node(Leaf(down))
+            segment.node.left = up.node
+            segment.node.right = down.node
 
         else:
             if to_swap == self.root:
@@ -295,18 +279,18 @@ class DTree:
             else:
                 to_swap.node = segment.node
 
-            segment.node.left = Node(Leaf(up))
-            segment.node.right = Node(Leaf(down))
+            segment.node.left = up.node
+            segment.node.right = down.node
 
     def update_multiple(self, trapezoids: list[Trapezoid], s: Segment, splitted_trapezoids: dict):
         n = len(trapezoids)
 
         for i in range(n):
             trapezoid = trapezoids[i]
-            to_swap = self.find_node(trapezoid.leaf)
+            to_swap = self.find_node(trapezoid.node)
             segment = Node(YNode(s))
 
             to_swap.node = segment.node
 
-            segment.node.left = Node(Leaf(splitted_trapezoids[trapezoids[i]][0]))
-            segment.node.right = Node(Leaf(splitted_trapezoids[trapezoids[i]][1]))
+            segment.node.left = splitted_trapezoids[trapezoids[i]][0].node
+            segment.node.right = splitted_trapezoids[trapezoids[i]][1].node

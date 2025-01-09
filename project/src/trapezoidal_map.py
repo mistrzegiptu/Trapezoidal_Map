@@ -27,8 +27,8 @@ class TrapezoidalMap:
     def follow_segment(self, s: Segment):
         p, q = s.get_points()
         intersected_trapezoids = []
-        first_trapezoid = self.tree.find(self.tree.root, p, s.a)
-
+        first_trapezoid = self.tree.find(self.tree.root, p, s.a).node.trapezoid
+        self.vis.show()
         intersected_trapezoids.append(first_trapezoid)
 
         j = 0
@@ -196,7 +196,15 @@ class TrapezoidalMap:
             for t in list_to_visualize:
                 dict_to_visualize[t] = {trapezoids[0]}
             self.update_visualizer([left, top, bottom, right], s, dict_to_visualize)
-            trapezoids[0].leaf = Leaf(trapezoids[0])
+
+            trapezoids[0].node = Node(Leaf(trapezoids[0]))
+            top.node = Node(Leaf(top))
+            bottom.node = Node(Leaf(bottom))
+            if left:
+                left.node = Node(Leaf(left))
+            if right:
+                right.node = Node(Leaf(right))
+
             self.tree.update_single(trapezoids[0], s, top, bottom, left, right)
         else:
             tops = []
@@ -254,10 +262,19 @@ class TrapezoidalMap:
             for top in tops:
                 for trapezoid in from_trapezoid[top]:
                     splitted_trapezoids[trapezoid] = [top]
+                    if top.node is None:
+                        top.node = Node(Leaf(top))
 
             for bot in bottoms:
                 for trapezoid in from_trapezoid[bot]:
                     splitted_trapezoids[trapezoid].append(bot)
+                    if bot.node is None:
+                        bot.node = Node(Leaf(bot))
+
+            if left:
+                left.node = Node(Leaf(left))
+            if right:
+                right.node = Node(Leaf(right))
 
             self.update_visualizer([left] + tops + bottoms + [right], s, from_trapezoid)
 
