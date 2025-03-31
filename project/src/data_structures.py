@@ -272,7 +272,6 @@ class DTree:
 
             segment.node.left = up.node
             segment.node.right = down.node
-
         else:
             if to_swap == self.root:
                 self.root.node = segment.node
@@ -281,6 +280,7 @@ class DTree:
 
             segment.node.left = up.node
             segment.node.right = down.node
+
 
     def update_multiple(self, trapezoids: list[Trapezoid], s: Segment, split_trapezoids: dict):
         n = len(trapezoids)

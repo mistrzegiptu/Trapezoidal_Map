@@ -5,10 +5,12 @@ import random
 class TrapezoidalMap:
 
     def __init__(self, S: list[tuple[tuple[float, float], tuple[float, float]]]):
-        self.segments = self.__create_segments(random.sample(S, len(S)))
+        permuted_s = random.sample(S, len(S))
+        self.segments = self.__create_segments(permuted_s)
         self.rect_bound = self.__create_rect_bound()
         self.tree = DTree()
         self.tree.root = Node(Leaf(self.rect_bound))
+
         self.vis = Visualizer()
         self.vis.add_line_segment([self.rect_bound.up.to_tuple(), self.rect_bound.down.to_tuple()], color='red')
         ls = self.vis.add_line_segment(self.rect_bound.get_segments(as_tuples=True))
@@ -267,6 +269,11 @@ class TrapezoidalMap:
                     split_trapezoids[trapezoid].append(bot)
                     if bot.node is None:
                         bot.node = Node(Leaf(bot))
+
+            if left:
+                left.node = Node(Leaf(left))
+            if right:
+                right.node = Node(Leaf(right))
 
 
             if left:
