@@ -27,7 +27,7 @@ class TrapezoidalMap:
     def follow_segment(self, s: Segment):
         p, q = s.get_points()
         intersected_trapezoids = []
-        first_trapezoid = self.tree.find(self.tree.root, p, s.a).node.trapezoid
+        first_trapezoid = self.tree.find(self.tree.root, p, None, s.a).node.trapezoid
         intersected_trapezoids.append(first_trapezoid)
 
         j = 0

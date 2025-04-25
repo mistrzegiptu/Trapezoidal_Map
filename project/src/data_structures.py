@@ -1,11 +1,14 @@
 from __future__ import annotations
 from typing import Tuple
 from enum import Enum
+from .visualizer.main import Visualizer
+
 
 class Position(Enum):
     BELOW = -1
     ON = 0
     ABOVE = 1
+
 
 class Point:
     def __init__(self, x: float, y: float):
@@ -33,6 +36,7 @@ class Point:
 
     def __eq__(self, other: Point) -> bool:
         return self.x == other.x and self.y == other.y
+
 
 class Segment:
     eps = 10 ** -16
@@ -71,6 +75,7 @@ class Segment:
     def __eq__(self, other: Segment) -> bool:
         return self.left == other.left and self.right == other.right
 
+
 class Trapezoid:
     def __init__(self, left: Point, right: Point, up: Segment, down: Segment):
         self.left = left
@@ -91,7 +96,7 @@ class Trapezoid:
     def __repr__(self) -> str:
         return f"[{self.left}, {self.right}, {self.up}, {self.down}]"
 
-    def get_points(self, as_tuples = False) -> tuple:
+    def get_points(self, as_tuples=False) -> tuple:
         p1 = Point(self.left.x, self.down.get_y_from_x(self.left.x))
         p2 = Point(self.right.x, self.down.get_y_from_x(self.right.x))
         p3 = Point(self.right.x, self.up.get_y_from_x(self.right.x))
@@ -100,7 +105,7 @@ class Trapezoid:
             return p1, p2, p3, p4
         return p1.to_tuple(), p2.to_tuple(), p3.to_tuple(), p4.to_tuple()
 
-    def get_segments(self, as_tuples = False) -> tuple:
+    def get_segments(self, as_tuples=False) -> tuple:
         p = self.get_points(as_tuples)
         if not as_tuples:
             return Segment(p[0], p[1]), Segment(p[1], p[2]), Segment(p[2], p[3]), Segment(p[3], p[0])
@@ -132,6 +137,7 @@ class Trapezoid:
     def __hash__(self):
         return id(self)
 
+
 class Leaf:
     def __init__(self, trapezoid: Trapezoid):
         if trapezoid is not None:
@@ -143,6 +149,7 @@ class Leaf:
 
     def __eq__(self, other: Leaf) -> bool:
         return self.trapezoid == other.trapezoid
+
 
 class Node:
     def __init__(self, node: (XNode, YNode, Leaf)):
@@ -169,10 +176,12 @@ class Node:
             return self.node == other.node
         return False
 
+
 class XYNode:
     def __init__(self):
         self.left = None
         self.right = None
+
 
 class XNode(XYNode):
     def __init__(self, p: Point):
@@ -182,6 +191,7 @@ class XNode(XYNode):
     def __eq__(self, other: XNode):
         return self.p == other.p
 
+
 class YNode(XYNode):
     def __init__(self, s: Segment):
         super().__init__()
@@ -190,49 +200,56 @@ class YNode(XYNode):
     def __eq__(self, other: YNode):
         return self.s == other.s
 
+
 class DTree:
     def __init__(self):
         self.root = None
 
-    def find(self, node: Node, point: Point, a: float = None):
+    def find(self, node: Node, point: Point, vis: Visualizer = None, a: float = None):
         if node.is_leaf():
+            if vis is not None:
+                vis.add_polygon(node.node.trapezoid.get_points(as_tuples=True), color="cyan")
             return node
         elif node.is_x_node():
+            if vis is not None:
+                vis.add_point(node.node.p.to_tuple(), color="cyan")
             if node.node.p > point:
-                return self.find(node.node.left, point, a)
+                return self.find(node.node.left, point, vis, a)
             else:
-                return self.find(node.node.right, point, a)
+                return self.find(node.node.right, point, vis, a)
         else:
+            if vis is not None:
+                vis.add_line_segment(node.node.s.to_tuple(), color="cyan")
             position = node.node.s.position(point)
             if position == Position.ABOVE:
-                return self.find(node.node.left, point, a)
+                return self.find(node.node.left, point, vis, a)
             elif position == Position.BELOW:
-                return self.find(node.node.right, point, a)
+                return self.find(node.node.right, point, vis, a)
             else:
                 if node.node.s.a < a:
-                    return self.find(node.node.left, point, a)
+                    return self.find(node.node.left, point, vis, a)
                 else:
-                    return self.find(node.node.right, point, a)
+                    return self.find(node.node.right, point, vis, a)
 
     def find_node(self, target_node: Node):
         trapezoid = target_node.node.trapezoid
-        mid_x = (trapezoid.left.x+trapezoid.right.x) / 2
+        mid_x = (trapezoid.left.x + trapezoid.right.x) / 2
         mid_upper_y = trapezoid.up.a * mid_x + trapezoid.up.b
         mid_lower_y = trapezoid.down.a * mid_x + trapezoid.down.b
         mid_point = Point(mid_x, mid_lower_y + (mid_upper_y - mid_lower_y) / 2)
 
-        node_found = self.find(self.root, mid_point, trapezoid.down.a)
+        node_found = self.find(self.root, mid_point, None, trapezoid.down.a)
 
         return node_found
 
-    def update_single(self, trapezoid: Trapezoid, s: Segment, up: Trapezoid, down: Trapezoid, left: (Trapezoid, None), right: (Trapezoid, None)):
+    def update_single(self, trapezoid: Trapezoid, s: Segment, up: Trapezoid, down: Trapezoid, left: (Trapezoid, None),
+                      right: (Trapezoid, None)):
         to_swap = self.find_node(trapezoid.node)
         p, q = s.get_points()
 
         segment_left = Node(XNode(p))
         segment_right = Node(XNode(q))
         segment = Node(YNode(s))
-
 
         if left and right:
             if to_swap == self.root:
@@ -280,7 +297,6 @@ class DTree:
 
             segment.node.left = up.node
             segment.node.right = down.node
-
 
     def update_multiple(self, trapezoids: list[Trapezoid], s: Segment, split_trapezoids: dict):
         n = len(trapezoids)
